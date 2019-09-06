@@ -1,0 +1,10 @@
+FROM node:12.10.0-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm ci
+RUN ./node_modules/.bin/gulp build
+
+CMD ["node", "dist/main.js"]
