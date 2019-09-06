@@ -1,61 +1,54 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import * as fs from "fs";
-import path from "path";
+import mongoose from "mongoose";
+import config from "./config";
+import MovieModel from "./movie.model";
 
 const app = express();
+
+mongoose.connect(config.get("mongoUri"), { useNewUrlParser: true });
 
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get("/", (req, res, next) => {
-  if (!fs.existsSync(path.join(__dirname, "movies.txt"))) {
-    fs.writeFileSync(path.join(__dirname, "movies.txt"), "");
-  }
-  fs.readFile(path.join(__dirname, "movies.txt"), (error, data) => {
-    if (error) return next(error);
-    return res.json({
+const asyncMid = (fn: (req: Request, res: Response) => Promise<any>) => (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => fn(req, res).catch(error => next(error));
+
+app.get(
+  "/",
+  asyncMid(async (req, res) => {
+    const movies = await MovieModel.find({}).exec();
+    res.json({
       success: true,
-      data: data
-        .toString()
-        .split("\n")
-        .filter(line => line !== "")
+      data: movies
     });
-  });
-});
+  })
+);
 
-app.post("/", (req, res, next) => {
-  fs.appendFile(
-    path.join(__dirname, "movies.txt"),
-    `\n${req.body.movie}`,
-    error => {
-      if (error) return next(error);
-      return res.json({ success: true });
-    }
-  );
-});
-
-app.delete("/:movie", (req, res, next) => {
-  fs.readFile(path.join(__dirname, "movies.txt"), (error, data) => {
-    if (error) return next(error);
-    fs.writeFile(
-      path.join(__dirname, "movies.txt"),
+app.post(
+  "/",
+  asyncMid(async (req, res) => {
+    const data = await MovieModel.create({ name: req.body.movie });
+    res.json({
+      success: true,
       data
-        .toString()
-        .split("\n")
-        .filter(line => line !== req.params.movie)
-        .join("\n"),
-      writeError => {
-        if (writeError) return next(writeError);
-        return res.json({
-          success: true
-        });
-      }
-    );
-  });
-});
+    });
+  })
+);
 
-// app.listen(3003);
+app.delete(
+  "/:id",
+  asyncMid(async (req, res) => {
+    const data = await MovieModel.findByIdAndDelete(req.params.id).exec();
+    // TODO: data === null
+    res.json({ success: true, data });
+  })
+);
 
-module.exports = app;
+app.listen(config.get("port"), () =>
+  console.log(`Listening on ${config.get("port")}`)
+);

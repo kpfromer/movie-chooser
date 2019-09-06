@@ -2,12 +2,19 @@ import React, { useState, useEffect, FormEvent } from "react";
 import "./App.css";
 import axios from "axios";
 
-const api = "http://localhost:3003";
+const api = !!process.env.REACT_APP_API_URL
+  ? process.env.REACT_APP_API_URL
+  : "http://localhost:3000";
 
 const App: React.FC = () => {
-  const [movies, setMovies] = useState<null | string[]>(null);
+  const [movies, setMovies] = useState<null | { _id: string; name: string }[]>(
+    null
+  );
   const [movie, setMovie] = useState("");
-  const [randomMovie, setRandomMovie] = useState("");
+  const [randomMovie, setRandomMovie] = useState<{
+    _id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     axios.get(api).then(res => setMovies(res.data.data));
@@ -18,17 +25,17 @@ const App: React.FC = () => {
     if (movie !== "") {
       axios.post(api, { movie }).then(res => {
         if (res.data.success && movies !== null) {
-          movies.push(movie);
+          movies.push(res.data.data);
           setMovie("");
         }
       });
     }
   };
 
-  const remove = (movie: string) => () => {
-    axios.delete(`${api}/${movie}`).then(res => {
+  const remove = (id: string) => () => {
+    axios.delete(`${api}/${id}`).then(res => {
       if (res.data.success && movies !== null) {
-        setMovies(movies.filter(oldMovie => oldMovie !== movie));
+        setMovies(movies.filter(oldMovie => oldMovie._id !== id));
       }
     });
   };
@@ -48,8 +55,8 @@ const App: React.FC = () => {
           <li>None</li>
         ) : (
           movies.map(movie => (
-            <li key={movie} onClick={remove(movie)}>
-              {movie}
+            <li key={movie._id} onClick={remove(movie._id)}>
+              {movie.name}
             </li>
           ))
         )}
@@ -60,7 +67,9 @@ const App: React.FC = () => {
         <button type="submit">Submit</button>
       </form>
       <button onClick={getRandom}>Get Random Movie</button>
-      <h1>Random Movie: "{randomMovie}"</h1>
+      <h1>
+        Random Movie: "{randomMovie === null ? "none" : randomMovie.name}"
+      </h1>
     </div>
   );
 };
