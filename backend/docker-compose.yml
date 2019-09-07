@@ -3,12 +3,13 @@ services:
   web:
     image: kpfromer/movie-chooser
     ports:
-      - "80:8080"
+      - "80:3001"
     environment:
       - MONGO_URI=mongodb://mongo:27017/movie-chooser
     depends_on:
       - mongo
     restart: always
+    command: ["./wait-for-it.sh", "mongo:5432", "--", "node", "dist/main.js"]
   mongo:
     image: mongo
     ports:

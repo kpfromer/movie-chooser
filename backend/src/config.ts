@@ -10,7 +10,7 @@ const config = convict({
   port: {
     doc: "The port to bind to",
     format: "port",
-    default: 8080,
+    default: 3001,
     env: "PORT"
   },
   mongoUri: {
@@ -18,6 +18,12 @@ const config = convict({
     format: String,
     default: "mongodb://localhost/movie-chooser",
     env: "MONGO_URI"
+  },
+  apiKey: {
+    doc: "Api key for themoviedb.",
+    format: String,
+    default: "none",
+    env: "API_KEY"
   }
   // auth: {
   //   jwtSecret: {

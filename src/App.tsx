@@ -27,7 +27,8 @@ import {
   Button,
   TextField,
   ListItemIcon,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  Card
 } from "@material-ui/core";
 
 const api = !!process.env.REACT_APP_API_URL
@@ -115,6 +116,14 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+interface MovieDetails {
+  title: string;
+  posterPath: string;
+  overview: string;
+  voteAverage: number; // out of 10
+  releaseDate: string; // Ex: 2014-10-24
+}
+
 const App: React.FC = () => {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
@@ -124,19 +133,28 @@ const App: React.FC = () => {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  // const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
-  const [movies, setMovies] = useState<null | { _id: string; name: string }[]>(
-    null
-  );
+  const [movies, setMovies] = useState<
+    | null
+    | {
+        _id: string;
+        name: string;
+        details?: MovieDetails;
+      }[]
+  >(null);
   const [movie, setMovie] = useState("");
   const [randomMovie, setRandomMovie] = useState<{
     _id: string;
     name: string;
+    details?: MovieDetails;
   } | null>(null);
 
   useEffect(() => {
-    axios.get(api).then(res => setMovies(res.data.data));
+    axios.get(api).then(res => {
+      console.log(res.data.data);
+      setMovies(res.data.data);
+    });
   }, []);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -198,22 +216,37 @@ const App: React.FC = () => {
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
           <h1>Movie List:</h1>
-          <List>
-            {movies === null ? (
-              <li>None</li>
-            ) : (
-              movies.map(movie => (
-                <ListItem key={movie._id}>
+          {/* <List> */}
+          {movies === null ? (
+            <li>None</li>
+          ) : (
+            movies.map(movie => (
+              <Paper key={movie._id} style={{ marginBottom: "15px" }}>
+                {movie.details !== undefined ? (
+                  <>
+                    <Typography variant="h3">{movie.details.title}</Typography>
+                    <Typography variant="subtitle1">
+                      Votes: {movie.details.voteAverage}/10
+                    </Typography>
+                    <Typography variant="h6">Overview:</Typography>
+                    <Typography variant="body2">
+                      {movie.details.overview}
+                    </Typography>
+                    <img
+                      src={`http://image.tmdb.org/t/p/w185${movie.details.posterPath}`}
+                    />
+                  </>
+                ) : (
                   <ListItemText>{movie.name}</ListItemText>
-                  <ListItemSecondaryAction>
-                    <IconButton edge="end" onClick={remove(movie._id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))
-            )}
-          </List>
+                )}
+                <br />
+                <IconButton edge="end" onClick={remove(movie._id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Paper>
+            ))
+          )}
+          {/* </List> */}
           <form onSubmit={submit}>
             <TextField
               value={movie}
@@ -235,7 +268,12 @@ const App: React.FC = () => {
                   <br />
                   <Typography variant="h5">
                     Random Movie: "
-                    {randomMovie === null ? "none" : randomMovie.name}"
+                    {randomMovie === null
+                      ? "none"
+                      : randomMovie.details !== undefined
+                      ? randomMovie.details.title
+                      : randomMovie.name}
+                    "
                   </Typography>
                 </>
               )}

@@ -4,6 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import config from "./config";
 import MovieModel from "./movie.model";
+import { searchMovie } from "./movieApi";
 
 const app = express();
 
@@ -32,7 +33,12 @@ app.get(
 app.post(
   "/",
   asyncMid(async (req, res) => {
-    const data = await MovieModel.create({ name: req.body.movie });
+    const apiMovie = await searchMovie(req.body.movie);
+    const data = await MovieModel.create(
+      apiMovie !== null
+        ? { name: req.body.movie, details: apiMovie }
+        : { name: req.body.movie }
+    );
     res.json({
       success: true,
       data
