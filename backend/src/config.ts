@@ -22,8 +22,21 @@ const config = convict({
   apiKey: {
     doc: "Api key for themoviedb.",
     format: String,
-    default: "none",
+    default: "",
     env: "API_KEY"
+  },
+  auth: {
+    jwtSecret: {
+      doc: "The secret for the jwt tokens",
+      format: String,
+      default: "jwt-secret",
+      env: "JWT_SECRET"
+    },
+    brcyptSaltRounds: {
+      doc: "The number of rounds to salt jwt tokens",
+      format: Number,
+      default: 12
+    }
   }
   // auth: {
   //   jwtSecret: {

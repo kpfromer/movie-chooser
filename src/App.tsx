@@ -1,39 +1,28 @@
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState } from "react";
 import "./App.css";
-import axios from "axios";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { makeStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
-import Badge from "@material-ui/core/Badge";
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
-import Link from "@material-ui/core/Link";
 import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import DeleteIcon from "@material-ui/icons/Delete";
-import clsx from "clsx";
+import Container from "@material-ui/core/Container";
 import {
-  ListItemText,
-  ListItem,
-  Input,
-  Button,
-  TextField,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Card
-} from "@material-ui/core";
-
-const api = !!process.env.REACT_APP_API_URL
-  ? process.env.REACT_APP_API_URL
-  : "http://localhost:3001";
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Link as RouterLink
+} from "react-router-dom";
+import Link from "@material-ui/core/Link";
+import clsx from "clsx";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import Home from "./pages/Home/Home";
+import { useGlobalState } from ".";
+import CustomSnackbar from "./components/Snackbar/Snackbar";
+import { Button } from "@material-ui/core";
+import UserPage from "./pages/MovieList/User";
 
 const drawerWidth = 240;
 
@@ -116,14 +105,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-interface MovieDetails {
-  title: string;
-  posterPath: string;
-  overview: string;
-  voteAverage: number; // out of 10
-  releaseDate: string; // Ex: 2014-10-24
-}
-
 const App: React.FC = () => {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
@@ -133,155 +114,81 @@ const App: React.FC = () => {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+  const [state, dispatch] = useGlobalState();
   // const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
-  const [movies, setMovies] = useState<
-    | null
-    | {
-        _id: string;
-        name: string;
-        details?: MovieDetails;
-      }[]
-  >(null);
-  const [movie, setMovie] = useState("");
-  const [randomMovie, setRandomMovie] = useState<{
-    _id: string;
-    name: string;
-    details?: MovieDetails;
-  } | null>(null);
-
-  useEffect(() => {
-    axios.get(api).then(res => {
-      console.log(res.data.data);
-      setMovies(res.data.data);
-    });
-  }, []);
-
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (movie !== "") {
-      axios.post(api, { movie }).then(res => {
-        if (res.data.success && movies !== null) {
-          movies.push(res.data.data);
-          setMovie("");
-        }
-      });
-    }
-  };
-
-  const remove = (id: string) => () => {
-    axios.delete(`${api}/${id}`).then(res => {
-      if (res.data.success && movies !== null) {
-        setMovies(movies.filter(oldMovie => oldMovie._id !== id));
-      }
-    });
-  };
-
-  const getRandom = () => {
-    if (movies !== null && movies.length > 0) {
-      const index = Math.floor(Math.random() * movies.length);
-      setRandomMovie(movies[index]);
-    }
+  const logout = () => {
+    dispatch.setSnackbar({ message: "Logged out.", type: "info" });
+    dispatch.setToken("");
+    dispatch.setUsername("");
   };
 
   return (
-    <div className="App">
-      <CssBaseline />
-      <AppBar position="absolute">
-        <Toolbar className={classes.toolbar}>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            className={clsx(
-              classes.menuButton,
-              open && classes.menuButtonHidden
-            )}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            className={classes.title}
-          >
-            Movie Chooser
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <h1>Movie List:</h1>
-          {/* <List> */}
-          {movies === null ? (
-            <li>None</li>
-          ) : (
-            movies.map(movie => (
-              <Paper key={movie._id} style={{ marginBottom: "15px" }}>
-                {movie.details !== undefined ? (
-                  <>
-                    <Typography variant="h3">{movie.details.title}</Typography>
-                    <Typography variant="subtitle1">
-                      Votes: {movie.details.voteAverage}/10
-                    </Typography>
-                    <Typography variant="h6">Overview:</Typography>
-                    <Typography variant="body2">
-                      {movie.details.overview}
-                    </Typography>
-                    <img
-                      src={`http://image.tmdb.org/t/p/w185${movie.details.posterPath}`}
-                    />
-                  </>
-                ) : (
-                  <ListItemText>{movie.name}</ListItemText>
-                )}
-                <br />
-                <IconButton edge="end" onClick={remove(movie._id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </Paper>
-            ))
-          )}
-          {/* </List> */}
-          <form onSubmit={submit}>
-            <TextField
-              value={movie}
-              label="New Movie"
-              onChange={event => setMovie(event.target.value)}
-            />
-            <br />
-            <Button type="submit">Submit</Button>
-          </form>
-          <hr />
-          {movies !== null && movies.length > 0 && (
-            <>
-              <Button onClick={getRandom}>Get Random Movie</Button>
-              {randomMovie !== null && (
-                <>
-                  <Button onClick={remove(randomMovie._id)}>
-                    Remove Random
-                  </Button>
-                  <br />
-                  <Typography variant="h5">
-                    Random Movie: "
-                    {randomMovie === null
-                      ? "none"
-                      : randomMovie.details !== undefined
-                      ? randomMovie.details.title
-                      : randomMovie.name}
-                    "
-                  </Typography>
-                </>
+    <Router>
+      <div className="App">
+        {state.commonStore.snackbar !== undefined && (
+          <CustomSnackbar
+            open
+            onClose={() => dispatch.setSnackbar(undefined)}
+            message={state.commonStore.snackbar.message}
+            variant={state.commonStore.snackbar.type}
+          />
+        )}
+        <CssBaseline />
+        <AppBar position="absolute">
+          <Toolbar className={classes.toolbar}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              className={clsx(
+                classes.menuButton,
+                open && classes.menuButtonHidden
               )}
-            </>
-          )}
-        </Container>
-      </main>
-    </div>
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              className={classes.title}
+            >
+              <Link component={RouterLink} color="inherit" to="/">
+                Movie Chooser
+              </Link>
+            </Typography>
+            <Button component={RouterLink} color="inherit" to="/register">
+              Register
+            </Button>
+            {state.commonStore.token !== "" ? (
+              <Button color="inherit" onClick={logout}>
+                Logout
+              </Button>
+            ) : (
+              <Button component={RouterLink} color="inherit" to="/login">
+                Login
+              </Button>
+            )}
+          </Toolbar>
+        </AppBar>
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Container maxWidth="lg" className={classes.container}>
+            <Switch>
+              <Route exact path="/" render={() => <Home classes={classes} />} />
+              <Route exact path="/login" component={Login} />
+              <Route exact path="/register" component={Register} />
+              <Route exact path="/movies/:user" component={UserPage} />
+              <Route render={() => <>Page Not Found!</>} />
+              {/* <Route exact path="/movie/:user" render={Register} /> */}
+            </Switch>
+          </Container>
+        </main>
+      </div>
+    </Router>
   );
 };
 

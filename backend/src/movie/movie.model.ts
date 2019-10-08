@@ -1,7 +1,7 @@
 import { Typegoose, prop } from "typegoose";
-import { Movie as MovieDetails } from "./movieApi";
+import { Movie as MovieDetails } from "../movieApi";
 
-class Movie extends Typegoose {
+export class Movie extends Typegoose {
   @prop({ required: true })
   public name: string = "";
 
@@ -10,6 +10,9 @@ class Movie extends Typegoose {
 
   @prop()
   public details?: MovieDetails;
+
+  @prop({ required: true, default: "1" })
+  public version: string = "";
 }
 
 const MovieModel = new Movie().getModelForClass(Movie);
