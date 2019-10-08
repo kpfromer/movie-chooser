@@ -237,6 +237,47 @@ const Home: React.FC<HomeProps> = ({ classes }) => {
             />
           ))}
       </Paper>
+
+      <br/>
+
+      <Paper>
+        {state.commonStore.token !== "" && (
+            <>
+              <Typography variant="h5" style={{fontWeight: "bold"}}>Add Movie</Typography>
+              <form onSubmit={submit}>
+                <TextField
+                    value={movie}
+                    label="New Movie"
+                    onChange={event => setMovie(event.target.value)}
+                    fullWidth
+                />
+                <br />
+                <Button type="submit">Submit</Button>
+              </form>
+            </>
+        )}
+        <hr/>
+        {users !== null && users.length > 0 && (
+            <>
+              <Button onClick={getRandom}>Get Random Movie</Button>
+              {randomMovie !== null && (
+                  <>
+                    <br />
+                    <Typography variant="h5">
+                      Random Movie: "
+                      {randomMovie === null
+                          ? "none"
+                          : randomMovie.details !== undefined
+                              ? randomMovie.details.title
+                              : randomMovie.name}
+                      "
+                    </Typography>
+                  </>
+              )}
+            </>
+        )}
+      </Paper>
+
       <h1>Movie List:</h1>
       {filteredUsers === null ? (
         <li>None</li>
@@ -254,38 +295,6 @@ const Home: React.FC<HomeProps> = ({ classes }) => {
             <MovieList user={user} onRemove={remove} />
           </>
         ))
-      )}
-
-      {state.commonStore.token !== "" && (
-        <form onSubmit={submit}>
-          <TextField
-            value={movie}
-            label="New Movie"
-            onChange={event => setMovie(event.target.value)}
-          />
-          <br />
-          <Button type="submit">Submit</Button>
-        </form>
-      )}
-      <hr />
-      {users !== null && users.length > 0 && (
-        <>
-          <Button onClick={getRandom}>Get Random Movie</Button>
-          {randomMovie !== null && (
-            <>
-              <br />
-              <Typography variant="h5">
-                Random Movie: "
-                {randomMovie === null
-                  ? "none"
-                  : randomMovie.details !== undefined
-                  ? randomMovie.details.title
-                  : randomMovie.name}
-                "
-              </Typography>
-            </>
-          )}
-        </>
       )}
     </>
   );
