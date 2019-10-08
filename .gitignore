@@ -24,3 +24,5 @@ yarn-error.log*
 
 backend/dist
 backend/node_modules
+
+.idea/
