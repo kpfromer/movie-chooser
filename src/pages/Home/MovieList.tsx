@@ -1,15 +1,13 @@
-import React, { Fragment } from "react";
-import { User, Movie } from "../../type";
+import React from "react";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import IconButton from "@material-ui/core/IconButton";
-import { useGlobalState } from "../..";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Chip from "@material-ui/core/Chip";
 
 export interface MovieListProps {
-  user: User;
-  onRemove: (movieId: string) => void;
+  movies: any[];
+  onRemove: (id: string) => void;
 }
 
 const getRuntime = (runtime: number): string => {
@@ -20,46 +18,47 @@ const getRuntime = (runtime: number): string => {
   return `${hourStr}${minuteStr}`;
 };
 
-const MovieList: React.FC<MovieListProps> = ({ user, onRemove }) => {
-  const [state] = useGlobalState();
+const MovieList: React.FC<MovieListProps> = ({ movies, onRemove }) => {
+  console.log(movies);
   return (
     <>
-      {user.movies.map(movie => (
-        <Paper key={movie._id} style={{ marginBottom: "15px" }}>
-          {movie.details !== undefined ? (
-            <>
-              <Typography variant="h3" gutterBottom>
-                {movie.details.title}
-              </Typography>
-              {movie.details.genres !== undefined &&
-                movie.details.genres.map(genre => (
-                  <Chip
-                    key={genre.id}
-                    label={genre.name}
-                    color="primary"
-                    style={{ marginLeft: "3px" }}
-                  />
-                ))}
-              <Typography variant="subtitle1">
-                Votes: {movie.details.voteAverage}/10
-                <br />
-                {!!movie.details.runtime && getRuntime(movie.details.runtime)}
-              </Typography>
-              <Typography variant="h6">Overview:</Typography>
-              <Typography variant="body2">{movie.details.overview}</Typography>
-              <img
-                src={`http://image.tmdb.org/t/p/w185${movie.details.posterPath}`}
+      {movies.map(movie => (
+        <Paper key={movie.id} style={{ marginBottom: "15px" }}>
+          <Typography variant="h3" gutterBottom>
+            {movie.title}
+          </Typography>
+          {!!movie.tags &&
+            movie.tags.map(tag => (
+              <Chip
+                key={tag.id}
+                label={tag.name}
+                color="primary"
+                style={{ marginLeft: "3px" }}
               />
+            ))}
+          <Typography variant="subtitle1">
+            {!!movie.voteAverage && `Votes: ${movie.voteAverage}/10`}
+            <br />
+            {!!movie.runtime && getRuntime(movie.runtime)}
+          </Typography>
+          {!!movie.description && (
+            <>
+              <Typography variant="h6">Description:</Typography>
+              <Typography variant="body2">{movie.description}</Typography>
             </>
-          ) : (
-            <Typography variant="h3">{movie.name}</Typography>
+          )}
+          {!!movie.posterPath && (
+            <img
+              src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
+              alt={`${movie.title} movie poster`}
+            />
           )}
           <br />
-          {state.commonStore.username === user.username && (
-            <IconButton edge="end" onClick={() => onRemove(movie._id)}>
+          {/* {movie.isOwner && (
+            <IconButton edge="end" onClick={() => onRemove(movie.id)}>
               <DeleteIcon />
             </IconButton>
-          )}
+          )} */}
         </Paper>
       ))}
     </>
