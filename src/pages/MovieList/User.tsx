@@ -37,7 +37,7 @@ const User: React.FC<UserProps & RouteComponentProps<{ user: string }>> = ({
           {getFirstUpperCase(user.firstName)} {getFirstUpperCase(user.lastName)}
         </Box>
       </Typography>
-      <MovieList user={user} onRemove={() => {}} />
+      {/* <MovieList user={user} onRemove={() => {}} /> */}
     </>
   );
 };

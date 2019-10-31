@@ -1,5 +1,5 @@
 import superagent from "superagent";
-import { commonStore, globalDispatch } from "..";
+// import { commonStore, globalDispatch } from "..";
 
 const encode = encodeURIComponent;
 
@@ -30,12 +30,12 @@ const handleErrors = err => {
   if (err && err.response && err.response.status === 401) {
     // TODO:
     // console.log("AUTH ERROR");
-    commonStore.token = "";
-    commonStore.snackbar = {
-      message: "You were logged out.",
-      type: "warning"
-    };
-    globalDispatch({ commonStore });
+    // commonStore.token = "";
+    // commonStore.snackbar = {
+    //   message: "You were logged out.",
+    //   type: "warning"
+    // };
+    // globalDispatch({ commonStore });
     // TODO: move logout action out
     // commonStore.token = "";
     // globalDispatch({ commonStore });
@@ -47,9 +47,9 @@ const handleErrors = err => {
 const responseBody = res => res.body;
 
 const tokenPlugin = req => {
-  if (commonStore.token) {
-    req.set("Authorization", `Bearer ${commonStore.token}`);
-  }
+  // if (commonStore.token) {
+  //   req.set("Authorization", `Bearer ${commonStore.token}`);
+  // }
 };
 
 const requests = {

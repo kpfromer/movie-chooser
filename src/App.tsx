@@ -19,10 +19,13 @@ import clsx from "clsx";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import Home from "./pages/Home/Home";
-import { useGlobalState } from ".";
+import { client } from ".";
 import CustomSnackbar from "./components/Snackbar/Snackbar";
 import { Button } from "@material-ui/core";
 import UserPage from "./pages/MovieList/User";
+import MoviePage from "./pages/Home/MoviePage";
+import { observer } from "mobx-react-lite";
+import CommonStore from "./store/CommonStore";
 
 const drawerWidth = 240;
 
@@ -105,7 +108,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const App: React.FC = () => {
+const App: React.FC = observer(() => {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -114,24 +117,20 @@ const App: React.FC = () => {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const [state, dispatch] = useGlobalState();
-  // const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
-
   const logout = () => {
-    dispatch.setSnackbar({ message: "Logged out.", type: "info" });
-    dispatch.setToken("");
-    dispatch.setUsername("");
+    CommonStore.notify({ message: "Logged out.", type: "success", time: 2000 });
+    CommonStore.logout();
   };
 
   return (
     <Router>
       <div className="App">
-        {state.commonStore.snackbar !== undefined && (
+        {CommonStore.snackbar !== null && (
           <CustomSnackbar
             open
-            onClose={() => dispatch.setSnackbar(undefined)}
-            message={state.commonStore.snackbar.message}
-            variant={state.commonStore.snackbar.type}
+            onClose={CommonStore.removeMessage}
+            message={CommonStore.snackbar.message}
+            variant={CommonStore.snackbar.type}
           />
         )}
         <CssBaseline />
@@ -160,16 +159,19 @@ const App: React.FC = () => {
                 Movie Chooser
               </Link>
             </Typography>
-            <Button component={RouterLink} color="inherit" to="/register">
-              Register
-            </Button>
-            {state.commonStore.token !== "" ? (
+
+            {!CommonStore.loggedIn ? (
+              <>
+                <Button component={RouterLink} color="inherit" to="/register">
+                  Register
+                </Button>
+                <Button component={RouterLink} color="inherit" to="/login">
+                  Login
+                </Button>
+              </>
+            ) : (
               <Button color="inherit" onClick={logout}>
                 Logout
-              </Button>
-            ) : (
-              <Button component={RouterLink} color="inherit" to="/login">
-                Login
               </Button>
             )}
           </Toolbar>
@@ -178,10 +180,11 @@ const App: React.FC = () => {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Switch>
-              <Route exact path="/" render={() => <Home classes={classes} />} />
+              <Route exact path="/" render={() => <Home />} />
               <Route exact path="/login" component={Login} />
               <Route exact path="/register" component={Register} />
               <Route exact path="/movies/:user" component={UserPage} />
+              <Route exact path="/movie/:id" component={MoviePage} />
               <Route render={() => <>Page Not Found!</>} />
               {/* <Route exact path="/movie/:user" render={Register} /> */}
             </Switch>
@@ -190,6 +193,6 @@ const App: React.FC = () => {
       </div>
     </Router>
   );
-};
+});
 
 export default App;

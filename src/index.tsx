@@ -2,64 +2,66 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
-import useGlobalHook from "./helper/useGlobalHook";
 import * as serviceWorker from "./serviceWorker";
-import { CustomSnackbarWrapperProps } from "./components/Snackbar/Snackbar";
+import { ApolloClient } from "apollo-client";
+import { ApolloProvider } from "@apollo/react-hooks";
+import { InMemoryCache, ApolloLink } from "apollo-boost";
+import { createHttpLink } from "apollo-link-http";
+import { onError } from "apollo-link-error";
+import CommonStore from "./store/CommonStore";
 
-class CommonStore {
-  public username: string;
-  public token: string;
-  public snackbar?: {
-    message: string;
-    type: CustomSnackbarWrapperProps["variant"];
-  };
+const appCache = new InMemoryCache();
 
-  constructor() {
-    this.username =
-      localStorage.getItem("username") === null
-        ? ""
-        : localStorage.getItem("username")!;
-    this.token =
-      localStorage.getItem("token") === null
-        ? ""
-        : localStorage.getItem("token")!;
-  }
-}
+const httpLink = createHttpLink({
+  uri: "http://localhost:3001/graphql"
+});
 
-export const commonStore = new CommonStore();
-
-// don't get state in actions!!
-export const [useGlobalState, globalDispatch] = useGlobalHook(
-  {
-    commonStore
-  },
-  {
-    setUsername: (state, action: string) => {
-      state.commonStore.username = action;
-      localStorage.setItem("username", action);
-      return { commonStore: state.commonStore };
-    },
-    setToken: (state, action: string) => {
-      state.commonStore.token = action;
-      localStorage.setItem("token", action);
-      return { commonStore: state.commonStore };
-    },
-    setSnackbar: (
-      state,
-      action?: {
-        message: string;
-        type: CustomSnackbarWrapperProps["variant"];
-      }
-    ) => {
-      state.commonStore.snackbar = action;
+const authMiddleware = new ApolloLink((operation, forward) => {
+  const token = localStorage.getItem("token");
+  operation.setContext(({ headers = {} }) => {
+    if (token !== null) {
       return {
-        commonStore: state.commonStore
+        headers: {
+          ...headers,
+          authorization: token
+        }
       };
     }
-  }
-);
+    return { headers };
+  });
+  return forward(operation);
+});
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.map(({ message, locations, path }) => {
+      // TODO: better method of catching errors
+      if (
+        message ===
+        "Context creation failed: Your session expired. Sign in again."
+      ) {
+        // every 401/unauthorized error will be caught here and update the global local state
+        CommonStore.logout();
+        CommonStore.notify({
+          type: "info",
+          message: "Logged out. Please sign in again."
+        });
+      }
+    });
+  }
+});
+
+export const client = new ApolloClient({
+  cache: appCache,
+  link: ApolloLink.from([authMiddleware, errorLink, httpLink])
+});
+
+ReactDOM.render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+  document.getElementById("root")
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
