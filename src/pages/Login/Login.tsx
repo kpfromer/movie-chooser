@@ -1,40 +1,38 @@
-import React, { useState, FormEvent } from "react";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import { Typography } from "@material-ui/core";
-import { Redirect } from "react-router-dom";
+import React, { useState, FormEvent } from 'react';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import { Typography } from '@material-ui/core';
+import { Redirect } from 'react-router-dom';
 
-import { useApolloClient } from "@apollo/react-hooks";
-import { SIGN_IN } from "../../resolvers/authorization";
-import { observer } from "mobx-react-lite";
-import CommonStore from "../../store/CommonStore";
+import { useApolloClient } from '@apollo/react-hooks';
+import { SIGN_IN } from '../../resolvers/authorization';
+import { observer } from 'mobx-react-lite';
+import CommonStore from '../../store/CommonStore';
 
-export interface LoginProps {}
-
-const Login: React.FC<LoginProps> = observer(() => {
+const Login: React.FC = observer(() => {
   const client = useApolloClient();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [done, setDone] = useState(false);
 
   if (done) {
     return <Redirect to="/" />;
   }
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
     client
       .mutate({ mutation: SIGN_IN, variables: { login: username, password } })
       .then(res => {
         CommonStore.login(username, res.data.signIn.token);
-        CommonStore.notify({ message: "Logged In.", type: "success" });
+        CommonStore.notify({ message: 'Logged In.', type: 'success' });
         setDone(true);
       })
       .catch(error => {
-        if (!!error.graphQLErrors) {
+        if (error.graphQLErrors) {
           setMessage(error.graphQLErrors.map(x => x.message));
           return;
         }
@@ -52,7 +50,7 @@ const Login: React.FC<LoginProps> = observer(() => {
         <TextField
           value={username}
           label="Username"
-          onChange={event => setUsername(event.target.value)}
+          onChange={(event): void => setUsername(event.target.value)}
           required
         />
         <br />
@@ -60,7 +58,7 @@ const Login: React.FC<LoginProps> = observer(() => {
           value={password}
           label="Password"
           type="password"
-          onChange={event => setPassword(event.target.value)}
+          onChange={(event): void => setPassword(event.target.value)}
           required
         />
         <br />

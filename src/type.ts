@@ -1,22 +1,22 @@
-export interface MovieDetails {
+export interface Movie {
+  id: string;
   title: string;
-  posterPath: string;
-  overview: string;
-  voteAverage: number; // out of 10
-  releaseDate: string; // Ex: 2014-10-24
-  runtime?: null | number;
-  genres?: { id: number; name: string }[];
+  posterPath?: string;
+  description?: string;
+  voteAverage?: number;
+  releaseDate?: Date;
+  runtime?: number;
+  tags: Tag[];
+  user: User;
 }
 
-export interface Movie {
-  _id: string;
+export interface Tag {
+  id: string;
   name: string;
-  details?: MovieDetails;
 }
 
 export interface User {
   username: string;
   firstName: string;
   lastName: string;
-  movies: Movie[];
 }

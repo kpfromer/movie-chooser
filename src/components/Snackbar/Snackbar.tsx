@@ -1,16 +1,15 @@
-import React, { SyntheticEvent } from "react";
-import clsx from "clsx";
-import Button from "@material-ui/core/Button";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorIcon from "@material-ui/icons/Error";
-import InfoIcon from "@material-ui/icons/Info";
-import CloseIcon from "@material-ui/icons/Close";
-import { amber, green } from "@material-ui/core/colors";
-import IconButton from "@material-ui/core/IconButton";
-import Snackbar from "@material-ui/core/Snackbar";
-import SnackbarContent from "@material-ui/core/SnackbarContent";
-import WarningIcon from "@material-ui/icons/Warning";
-import { makeStyles, Theme } from "@material-ui/core/styles";
+import React, { SyntheticEvent } from 'react';
+import clsx from 'clsx';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import { amber, green } from '@material-ui/core/colors';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import WarningIcon from '@material-ui/icons/Warning';
+import { makeStyles, Theme } from '@material-ui/core/styles';
 
 const variantIcon = {
   success: CheckCircleIcon,
@@ -19,7 +18,7 @@ const variantIcon = {
   info: InfoIcon
 };
 
-const useStyles1 = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   success: {
     backgroundColor: green[600]
   },
@@ -40,8 +39,8 @@ const useStyles1 = makeStyles((theme: Theme) => ({
     marginRight: theme.spacing(1)
   },
   message: {
-    display: "flex",
-    alignItems: "center"
+    display: 'flex',
+    alignItems: 'center'
   }
 }));
 
@@ -59,7 +58,7 @@ const CustomSnackbarWrapper: React.FC<CustomSnackbarWrapperProps> = ({
   variant,
   ...other
 }) => {
-  const classes = useStyles1();
+  const classes = useStyles();
   const Icon = variantIcon[variant];
 
   return (
@@ -87,23 +86,15 @@ const CustomSnackbarWrapper: React.FC<CustomSnackbarWrapperProps> = ({
   );
 };
 
-const useStyles2 = makeStyles((theme: Theme) => ({
-  margin: {
-    margin: theme.spacing(1)
-  }
-}));
-
 const CustomSnackbar: React.FC<
-  Omit<CustomSnackbarWrapperProps, "onClose"> & {
+  Omit<CustomSnackbarWrapperProps, 'onClose'> & {
     open?: boolean;
     message?: string;
     onClose?: () => void;
   }
-> = ({ open = false, onClose, message = "", ...otherProps }) => {
-  const classes = useStyles2();
-
-  function handleClose(event?: SyntheticEvent, reason?: string) {
-    if (reason === "clickaway") {
+> = ({ open = false, onClose, message = '', ...otherProps }) => {
+  function handleClose(event?: SyntheticEvent, reason?: string): void {
+    if (reason === 'clickaway') {
       return;
     }
     if (onClose !== undefined) {
@@ -114,8 +105,8 @@ const CustomSnackbar: React.FC<
   return (
     <Snackbar
       anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "left"
+        vertical: 'bottom',
+        horizontal: 'left'
       }}
       open={open}
       autoHideDuration={6000}

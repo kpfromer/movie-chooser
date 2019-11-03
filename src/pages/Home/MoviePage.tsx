@@ -1,24 +1,21 @@
-import React from "react";
-import { useQuery } from "@apollo/react-hooks";
-import { GET_MOVIE } from "../../resolvers/movies";
-import { CircularProgress, Paper, Typography, Chip } from "@material-ui/core";
-import { RouteComponentProps } from "react-router";
+import React from 'react';
+import { useQuery } from '@apollo/react-hooks';
+import { GET_MOVIE } from '../../resolvers/movies';
+import { CircularProgress, Paper, Typography, Chip } from '@material-ui/core';
+import { RouteComponentProps } from 'react-router';
 
-export interface MoviePageProps {}
-
-const MoviePage: React.FC<
-  MoviePageProps & RouteComponentProps<{ id: string }>
-> = ({ match }) => {
+const MoviePage: React.FC<RouteComponentProps<{ id: string }>> = ({
+  match
+}) => {
   const { data: movieData, loading } = useQuery(GET_MOVIE, {
     variables: { id: match.params.id }
   });
-  console.log({ movieData, id: match.params.id });
   if (loading) {
     return <CircularProgress variant="indeterminate" />;
   }
   const { movie } = movieData;
   return (
-    <Paper key={movie.id} style={{ marginBottom: "15px" }}>
+    <Paper key={movie.id} style={{ marginBottom: '15px' }}>
       <Typography variant="h3" gutterBottom>
         {movie.title}
       </Typography>
@@ -28,7 +25,7 @@ const MoviePage: React.FC<
             key={tag.id}
             label={tag.name}
             color="primary"
-            style={{ marginLeft: "3px" }}
+            style={{ marginLeft: '3px' }}
           />
         ))}
       <Typography variant="subtitle1">

@@ -1,87 +1,52 @@
-import React, { useState, useEffect, FormEvent, Fragment } from "react";
-import axios from "axios";
-import { getUrl } from "../../helper/getUrl";
+import React, { useState, FormEvent } from 'react';
 import {
-  Container,
   Typography,
   Paper,
-  ListItemText,
   IconButton,
   TextField,
   Button,
   Slider,
-  Link,
   Chip,
   CircularProgress
-} from "@material-ui/core";
-import { Link as RouterLink } from "react-router-dom";
-import { client } from "../..";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { User } from "../../helper/agent";
-import { Movie } from "../../type";
-import CustomSnackbar from "../../components/Snackbar/Snackbar";
-import MovieList from "./MovieList";
-import Box from "@material-ui/core/Box";
-import { useQuery } from "@apollo/react-hooks";
+} from '@material-ui/core';
+import { client } from '../..';
+import DeleteIcon from '@material-ui/icons/Delete';
+import { useQuery } from '@apollo/react-hooks';
 import {
   GET_MOVIES,
   ADD_MOVIE,
   DELETE_MOVIE,
   GET_MOVIES_TAGS
-} from "../../resolvers/movies";
-import { string } from "prop-types";
-import {GET_AUTH, GET_USERS} from "../../resolvers/authorization";
-import jwtDecode from "jwt-decode";
-import { observer } from "mobx-react-lite";
-import CommonStore from "../../store/CommonStore";
-
-export interface HomeProps {}
-
-const getFirstUpperCase = (value: string): string =>
-  `${value.charAt(0).toUpperCase()}${value.substring(1)}`;
-
-function removeDup<T>(
-  a: T[],
-  b: T[],
-  areDifferent: (already: T, newVal: T) => boolean
-): T[] {
-  const vals: T[] = a;
-  for (let bVal of b) {
-    let alreadyIn = false;
-    for (let inVal of vals) {
-      if (!areDifferent(inVal, bVal)) {
-        alreadyIn = true;
-        break;
-      }
-    }
-    if (!alreadyIn) {
-      vals.push(bVal);
-    }
-  }
-  return vals;
-}
+} from '../../resolvers/movies';
+import { GET_USERS } from '../../resolvers/authorization';
+import { observer } from 'mobx-react-lite';
+import CommonStore from '../../store/CommonStore';
+import { Movie, Tag } from '../../type';
 
 const getRuntime = (runtime: number): string => {
   const minutes = runtime % 60;
   const hours = (runtime - minutes) / 60;
-  let hourStr = hours > 0 ? `${hours}h` : "";
-  let minuteStr = minutes > 0 ? ` ${minutes}m` : "";
+  const hourStr = hours > 0 ? `${hours}h` : '';
+  const minuteStr = minutes > 0 ? ` ${minutes}m` : '';
   return `${hourStr}${minuteStr}`;
 };
 
-const Home: React.FC<HomeProps> = observer(() => {
-  const [movie, setMovie] = useState("");
+const Home: React.FC = observer(() => {
+  const [movie, setMovie] = useState('');
   const [time, setTime] = useState<number[]>([0, 300]);
   const [tagsToShow, setTagsToShow] = useState<string[]>([]);
   const [randomMovie, setRandomMovie] = useState('');
-  const { data: movieData, loading: loadingMovies } = useQuery(GET_MOVIES_TAGS);
+  const { data: movieData, loading: loadingMovies } = useQuery<{
+    movies: Movie[];
+    tags: Tag[];
+  }>(GET_MOVIES_TAGS);
   const { data: userData, loading: loadingUser } = useQuery(GET_USERS);
 
   const loading = loadingMovies && loadingUser;
 
-  const addMovie = (event: FormEvent<HTMLFormElement>) => {
+  const addMovie = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    if (movie !== "") {
+    if (movie !== '') {
       client.mutate({
         mutation: ADD_MOVIE,
         variables: { title: movie },
@@ -90,8 +55,7 @@ const Home: React.FC<HomeProps> = observer(() => {
     }
   };
 
-  const removeMovie = (id: string) => () => {
-    // TODO: remove
+  const removeMovie = (id: string) => (): void => {
     client
       .mutate({
         mutation: DELETE_MOVIE,
@@ -101,17 +65,20 @@ const Home: React.FC<HomeProps> = observer(() => {
       .then(res => {
         if (res.data === false) {
           CommonStore.notify({
-            message: "Movie does not exist",
-            type: "error"
+            message: 'Movie does not exist',
+            type: 'error'
           });
         }
       });
   };
 
-  const filterTime = (event: any, newValue: number | number[]) => {
+  const filterTime = (
+    event: React.ChangeEvent<{}>,
+    newValue: number | number[]
+  ): void => {
     setTime(newValue as number[]);
   };
-  const filterTag = (tagId: string) => () => {
+  const filterTag = (tagId: string) => (): void => {
     if (tagsToShow.includes(tagId)) {
       setTagsToShow(tagsToShow.filter(tag => tag !== tagId));
     } else {
@@ -122,20 +89,29 @@ const Home: React.FC<HomeProps> = observer(() => {
   const [start, end] = time;
   const movies =
     !!movieData &&
-    movieData.movies.filter(movie =>
-        start <= movie.runtime &&
-        movie.runtime <= end && // time
-        ((tagsToShow.length > 0 && movie.tags.some(tag => tagsToShow.includes(tag.id))) ||
-          tagsToShow.length === 0)// if tags include it (tags not empty)
+    movieData.movies.filter(
+      movie =>
+        (movie.runtime === undefined ||
+          (movie.runtime !== undefined &&
+            (start <= movie.runtime && movie.runtime <= end))) && // time
+        ((tagsToShow.length > 0 &&
+          movie.tags.some(tag => tagsToShow.includes(tag.id))) ||
+          tagsToShow.length === 0) // if tags include it (tags not empty)
     );
 
-  const getRandom = () => {
+  const getRandom = (): void => {
     if (userData.users.length > 0) {
       const validUsers = userData.users.filter(user => user.movies.length > 0);
       if (validUsers.length > 0) {
-        const randomUser = validUsers[Math.floor(Math.random() * validUsers.length)];
-        const movie = randomUser.movies[Math.floor(Math.random() * randomUser.movies.length)].title;
-        setRandomMovie(`${randomUser.firstName} ${randomUser.lastName}'s movie: "${movie}"`);
+        const randomUser =
+          validUsers[Math.floor(Math.random() * validUsers.length)];
+        const movie =
+          randomUser.movies[
+            Math.floor(Math.random() * randomUser.movies.length)
+          ].title;
+        setRandomMovie(
+          `${randomUser.firstName} ${randomUser.lastName}'s movie: "${movie}"`
+        );
       }
     }
   };
@@ -153,12 +129,13 @@ const Home: React.FC<HomeProps> = observer(() => {
           max={300} // TODO: max movie in list
         />
         {!loading &&
+          !!movieData &&
           movieData.tags.map(tag => (
             <Chip
               key={tag.id}
               label={tag.name}
-              color={tagsToShow.includes(tag.id) ? "primary" : "secondary"}
-              style={{ marginLeft: "3px" }}
+              color={tagsToShow.includes(tag.id) ? 'primary' : 'secondary'}
+              style={{ marginLeft: '3px' }}
               onClick={filterTag(tag.id)}
             />
           ))}
@@ -187,7 +164,7 @@ const Home: React.FC<HomeProps> = observer(() => {
           <TextField
             value={movie}
             label="New Movie"
-            onChange={event => setMovie(event.target.value)}
+            onChange={(event): void => setMovie(event.target.value)}
           />
           <br />
           <Button type="submit">Submit</Button>
@@ -195,16 +172,16 @@ const Home: React.FC<HomeProps> = observer(() => {
       )}
       <hr />
       {!loading && (
-          <>
-            <Button onClick={getRandom}>Get Random Movie</Button>
-            <h1>{randomMovie}</h1>
-          </>
+        <>
+          <Button onClick={getRandom}>Get Random Movie</Button>
+          <h1>{randomMovie}</h1>
+        </>
       )}
       {loading || !movies ? (
         <CircularProgress variant="indeterminate" />
       ) : (
         movies.map(movie => (
-          <Paper key={movie.id} style={{ marginBottom: "15px" }}>
+          <Paper key={movie.id} style={{ marginBottom: '15px' }}>
             <Typography variant="h3" gutterBottom>
               {movie.title}
             </Typography>
@@ -214,7 +191,7 @@ const Home: React.FC<HomeProps> = observer(() => {
                   key={tag.id}
                   label={tag.name}
                   color="primary"
-                  style={{ marginLeft: "3px" }}
+                  style={{ marginLeft: '3px' }}
                 />
               ))}
             <Typography variant="subtitle1">

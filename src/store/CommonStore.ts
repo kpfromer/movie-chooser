@@ -1,9 +1,9 @@
-import { observable, computed, action } from "mobx";
-import jwtDecode from "jwt-decode";
+import { observable, computed, action } from 'mobx';
+import jwtDecode from 'jwt-decode';
 
 type SnackBarMessage = {
   message: string;
-  type?: "success" | "warning" | "error" | "info";
+  type?: 'success' | 'warning' | 'error' | 'info';
   time?: number;
 };
 
@@ -15,11 +15,11 @@ class CommonStore {
   @observable
   public snackbar: {
     message: string;
-    type: "success" | "warning" | "error" | "info";
+    type: 'success' | 'warning' | 'error' | 'info';
   } | null = null;
   constructor() {
-    this.token = localStorage.getItem("token");
-    this.username = localStorage.getItem("username");
+    this.token = localStorage.getItem('token');
+    this.username = localStorage.getItem('username');
   }
   @computed
   get loggedIn(): boolean {
@@ -33,7 +33,7 @@ class CommonStore {
     return jwtDecode(this.token).id as string;
   }
   @action.bound
-  notify({ message, type = "info", time = 4000 }: SnackBarMessage): void {
+  notify({ message, type = 'info', time = 4000 }: SnackBarMessage): void {
     this.snackbar = { message, type };
     setTimeout(() => {
       this.snackbar = null;
@@ -44,16 +44,16 @@ class CommonStore {
     this.snackbar = null;
   }
   @action.bound
-  login(username: string, token: string) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("username", username);
+  login(username: string, token: string): void {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
     this.username = username;
     this.token = token;
   }
   @action.bound
   logout(): void {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
     this.token = null;
     this.username = null;
   }

@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import bounty from "bounty";
+import React, { useRef, useEffect } from 'react';
+import bounty from 'bounty';
 
 export interface OdometerProps {
   pause?: boolean;
@@ -11,8 +11,8 @@ const Odometer: React.FC<OdometerProps> = ({ pause = false }) => {
     if (element.current !== null && !pause) {
       bounty({
         el: element.current,
-        value: "£42,000,000",
-        initialValue: "£900,000",
+        value: '£42,000,000',
+        initialValue: '£900,000',
         lineHeight: 1.35,
         letterSpacing: 1,
         animationDelay: 100,
@@ -20,7 +20,7 @@ const Odometer: React.FC<OdometerProps> = ({ pause = false }) => {
       });
     }
   }, [pause]);
-  return <div ref={element}>{pause ? "£900,000" : ""}</div>;
+  return <div ref={element}>{pause ? '£900,000' : ''}</div>;
 };
 
 export default Odometer;

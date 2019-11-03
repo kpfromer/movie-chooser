@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 export const SIGN_IN = gql`
   mutation SignIn($login: String!, $password: String!) {
@@ -35,24 +35,24 @@ export const GET_AUTH = gql`
 `;
 
 export const GET_USERS = gql`
-    query GetUser {
-      users {
+  query GetUser {
+    users {
+      id
+      firstName
+      lastName
+      username
+      movies {
         id
-        firstName
-        lastName
-        username
-        movies {
+        title
+        description
+        voteAverage
+        runtime
+        posterPath
+        tags {
           id
-          title
-          description
-          voteAverage
-          runtime
-          posterPath
-          tags {
-            id
-            name
-          }
+          name
         }
       }
     }
+  }
 `;
