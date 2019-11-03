@@ -21,6 +21,7 @@ import { Button } from '@material-ui/core';
 import MoviePage from './pages/Home/MoviePage';
 import { observer } from 'mobx-react-lite';
 import CommonStore from './store/CommonStore';
+import Backup from './pages/Backup';
 
 const drawerWidth = 240;
 
@@ -161,6 +162,7 @@ const App: React.FC = observer(() => {
               <Route exact path="/register" component={Register} />
               {/* <Route exact path="/movies/:user" component={UserPage} /> */}
               <Route exact path="/movie/:id" component={MoviePage} />
+              <Route exact path="/backup" component={Backup} />
               <Route render={(): JSX.Element => <>Page Not Found!</>} />
               {/* <Route exact path="/movie/:user" render={Register} /> */}
             </Switch>
