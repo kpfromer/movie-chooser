@@ -9,11 +9,12 @@ import { InMemoryCache, ApolloLink } from 'apollo-boost';
 import { createHttpLink } from 'apollo-link-http';
 import { onError } from 'apollo-link-error';
 import CommonStore from './store/CommonStore';
+import { getUrl } from './helper/getUrl';
 
 const appCache = new InMemoryCache();
 
 const httpLink = createHttpLink({
-  uri: 'http://localhost:3001/graphql'
+  uri: getUrl('http://localhost:3001/graphql')
 });
 
 const authMiddleware = new ApolloLink((operation, forward) => {

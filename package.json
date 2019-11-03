@@ -25,7 +25,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:prod": "REACT_APP_API_URL=http://138.68.37.100 react-scripts build && mv build/index.html build/200.html",
+    "build:prod": "REACT_APP_API_URL=http://138.68.37.100/graphql react-scripts build && mv build/index.html build/200.html",
     "test": "react-scripts test",
     "precommit": "lint-staged",
     "lint:fix": "eslint --fix --max-warnings=0 './src/**/*.{ts,tsx}'",

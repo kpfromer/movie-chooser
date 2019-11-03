@@ -1,6 +1,6 @@
-export const getUrl = (route: string): string => {
+export const getUrl = (defaultUrl: string): string => {
   if (process.env.REACT_APP_API_URL) {
-    return `${process.env.REACT_APP_API_URL}/${route}`;
+    return process.env.REACT_APP_API_URL;
   }
-  return `http://localhost:3001/${route}`;
+  return defaultUrl;
 };
