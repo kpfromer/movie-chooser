@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, Fragment } from 'react';
 import {
   Typography,
   Paper,
@@ -21,7 +21,7 @@ import {
 import { GET_USERS } from '../../resolvers/authorization';
 import { observer } from 'mobx-react-lite';
 import CommonStore from '../../store/CommonStore';
-import { Movie, Tag } from '../../type';
+import { Movie, Tag, User } from '../../type';
 
 const getRuntime = (runtime: number): string => {
   const minutes = runtime % 60;
@@ -40,9 +40,11 @@ const Home: React.FC = observer(() => {
     movies: Movie[];
     tags: Tag[];
   }>(GET_MOVIES_TAGS);
-  const { data: userData, loading: loadingUser } = useQuery(GET_USERS);
+  const { data: userData, loading: loadingUser } = useQuery<{
+    users: (User & { movies: Movie[] })[];
+  }>(GET_USERS);
 
-  const loading = loadingMovies && loadingUser;
+  const loading = loadingMovies || loadingUser;
 
   const addMovie = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -87,20 +89,16 @@ const Home: React.FC = observer(() => {
   };
 
   const [start, end] = time;
-  const movies =
-    !!movieData &&
-    movieData.movies.filter(
-      movie =>
-        (movie.runtime === undefined ||
-          (movie.runtime !== undefined &&
-            (start <= movie.runtime && movie.runtime <= end))) && // time
-        ((tagsToShow.length > 0 &&
-          movie.tags.some(tag => tagsToShow.includes(tag.id))) ||
-          tagsToShow.length === 0) // if tags include it (tags not empty)
-    );
+  const filterMovie = (movie: Movie): boolean =>
+    (movie.runtime === undefined ||
+      (movie.runtime !== undefined &&
+        (start <= movie.runtime && movie.runtime <= end))) && // time
+    ((tagsToShow.length > 0 &&
+      movie.tags.some(tag => tagsToShow.includes(tag.id))) ||
+      tagsToShow.length === 0); // if tags include it (tags not empty)
 
   const getRandom = (): void => {
-    if (userData.users.length > 0) {
+    if (!!userData && userData.users.length > 0) {
       const validUsers = userData.users.filter(user => user.movies.length > 0);
       if (validUsers.length > 0) {
         const randomUser =
@@ -141,24 +139,6 @@ const Home: React.FC = observer(() => {
           ))}
       </Paper>
       <h1>Movie List:</h1>
-      {/* {filteredUsers === null ? (
-        <li>None</li>
-      ) : (
-        filteredUsers.map(user => (
-          <>
-            <Link component={RouterLink} to={`/movies/${user.username}`}>
-              <Typography variant="h2" gutterBottom>
-                <Box fontWeight="fontWeightMedium">
-                  {getFirstUpperCase(user.firstName)}{" "}
-                  {getFirstUpperCase(user.lastName)}
-                </Box>
-              </Typography>
-            </Link>
-            <MovieList user={user} onRemove={remove} />
-          </>
-        ))
-      )} */}
-
       {CommonStore.loggedIn && (
         <form onSubmit={addMovie}>
           <TextField
@@ -177,47 +157,54 @@ const Home: React.FC = observer(() => {
           <h1>{randomMovie}</h1>
         </>
       )}
-      {loading || !movies ? (
+      {loading || !userData ? (
         <CircularProgress variant="indeterminate" />
       ) : (
-        movies.map(movie => (
-          <Paper key={movie.id} style={{ marginBottom: '15px' }}>
-            <Typography variant="h3" gutterBottom>
-              {movie.title}
-            </Typography>
-            {!!movie.tags &&
-              movie.tags.map(tag => (
-                <Chip
-                  key={tag.id}
-                  label={tag.name}
-                  color="primary"
-                  style={{ marginLeft: '3px' }}
-                />
-              ))}
-            <Typography variant="subtitle1">
-              {!!movie.voteAverage && `Votes: ${movie.voteAverage}/10`}
-              <br />
-              {!!movie.runtime && getRuntime(movie.runtime)}
-            </Typography>
-            {!!movie.description && (
-              <>
-                <Typography variant="h6">Description:</Typography>
-                <Typography variant="body2">{movie.description}</Typography>
-              </>
-            )}
-            {!!movie.posterPath && (
-              <img
-                src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
-                alt={`${movie.title} movie poster`}
-              />
-            )}
-            <br />
-            {movie.user.username === CommonStore.username && (
-              <IconButton edge="end" onClick={removeMovie(movie.id)}>
-                <DeleteIcon />
-              </IconButton>
-            )}
-          </Paper>
+        userData.users.map(user => (
+          <Fragment key={user.id}>
+            <h1>
+              {user.firstName} {user.lastName}
+            </h1>
+            {user.movies.filter(filterMovie).map(movie => (
+              <Paper key={movie.id} style={{ marginBottom: '15px' }}>
+                <Typography variant="h3" gutterBottom>
+                  {movie.title}
+                </Typography>
+                {!!movie.tags &&
+                  movie.tags.map(tag => (
+                    <Chip
+                      key={tag.id}
+                      label={tag.name}
+                      color="primary"
+                      style={{ marginLeft: '3px' }}
+                    />
+                  ))}
+                <Typography variant="subtitle1">
+                  {!!movie.voteAverage && `Votes: ${movie.voteAverage}/10`}
+                  <br />
+                  {!!movie.runtime && getRuntime(movie.runtime)}
+                </Typography>
+                {!!movie.description && (
+                  <>
+                    <Typography variant="h6">Description:</Typography>
+                    <Typography variant="body2">{movie.description}</Typography>
+                  </>
+                )}
+                {!!movie.posterPath && (
+                  <img
+                    src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
+                    alt={`${movie.title} movie poster`}
+                  />
+                )}
+                <br />
+                {user.username === CommonStore.username && (
+                  <IconButton edge="end" onClick={removeMovie(movie.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </Paper>
+            ))}
+          </Fragment>
         ))
       )}
     </>
