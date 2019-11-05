@@ -22,6 +22,7 @@ import { GET_USERS } from '../../resolvers/authorization';
 import { observer } from 'mobx-react-lite';
 import CommonStore from '../../store/CommonStore';
 import { Movie, Tag, User } from '../../type';
+import moment from 'moment';
 
 const getRuntime = (runtime: number): string => {
   const minutes = runtime % 60;
@@ -49,11 +50,25 @@ const Home: React.FC = observer(() => {
   const addMovie = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     if (movie !== '') {
-      client.mutate({
-        mutation: ADD_MOVIE,
-        variables: { title: movie },
-        refetchQueries: [{ query: GET_MOVIES }, { query: GET_MOVIES_TAGS }]
-      });
+      setMovie('');
+      client
+        .mutate({
+          mutation: ADD_MOVIE,
+          variables: { title: movie },
+          refetchQueries: [
+            { query: GET_MOVIES },
+            { query: GET_MOVIES_TAGS },
+            { query: GET_USERS }
+          ]
+        })
+        .then(res => {
+          CommonStore.notify({
+            message: `Added "${res.data.createMovie.title}"`
+          });
+        })
+        .catch(() => {
+          setMovie(movie);
+        });
     }
   };
 
@@ -62,7 +77,11 @@ const Home: React.FC = observer(() => {
       .mutate({
         mutation: DELETE_MOVIE,
         variables: { id },
-        refetchQueries: [{ query: GET_MOVIES }, { query: GET_MOVIES_TAGS }]
+        refetchQueries: [
+          { query: GET_MOVIES },
+          { query: GET_MOVIES_TAGS },
+          { query: GET_USERS }
+        ]
       })
       .then(res => {
         if (res.data === false) {
@@ -180,6 +199,9 @@ const Home: React.FC = observer(() => {
                     />
                   ))}
                 <Typography variant="subtitle1">
+                  {!!movie.releaseDate &&
+                    moment(movie.releaseDate).format('MM/DD/YYYY')}
+                  <br />
                   {!!movie.voteAverage && `Votes: ${movie.voteAverage}/10`}
                   <br />
                   {!!movie.runtime && getRuntime(movie.runtime)}
