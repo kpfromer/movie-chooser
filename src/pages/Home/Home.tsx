@@ -238,23 +238,27 @@ const Home: React.FC = observer(() => {
                     </Grid>
                     <Grid item>
                       <Typography variant="subtitle1">
-                        {!!movie.releaseDate &&
-                          moment(movie.releaseDate).format('MM/DD/YYYY')}
-                        <br />
-                        {!!movie.voteAverage &&
-                          `Votes: ${movie.voteAverage}/10`}
-                        <br />
+                        {!!movie.releaseDate && (
+                          <>
+                            {moment(movie.releaseDate).format('MM/DD/YYYY')}
+                            <br />
+                          </>
+                        )}
+
+                        {!!movie.voteAverage && (
+                          <>
+                            {`Votes: ${movie.voteAverage}/10`}
+                            <br />
+                          </>
+                        )}
                         {!!movie.runtime && getRuntime(movie.runtime)}
                       </Typography>
                     </Grid>
                     <Grid item>
                       {!!movie.description && (
-                        <>
-                          <Typography variant="h6">Description:</Typography>
-                          <Typography variant="body2">
-                            {movie.description}
-                          </Typography>
-                        </>
+                        <Typography variant="body2">
+                          {movie.description}
+                        </Typography>
                       )}
                     </Grid>
                   </Grid>
