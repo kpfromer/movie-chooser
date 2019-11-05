@@ -2,6 +2,8 @@ language: node_js
 node_js:
   - "stable"
 install:
+  - npm ci
+script:
   # - npm test TODO:
   - npm run build:prod
 deploy:
