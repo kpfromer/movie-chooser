@@ -9,6 +9,7 @@ import {
   Chip,
   CircularProgress
 } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
 import { client } from '../..';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useQuery } from '@apollo/react-hooks';
@@ -185,45 +186,79 @@ const Home: React.FC = observer(() => {
               {user.firstName} {user.lastName}
             </h1>
             {user.movies.filter(filterMovie).map(movie => (
-              <Paper key={movie.id} style={{ marginBottom: '15px' }}>
-                <Typography variant="h3" gutterBottom>
-                  {movie.title}
-                </Typography>
-                {!!movie.tags &&
-                  movie.tags.map(tag => (
-                    <Chip
-                      key={tag.id}
-                      label={tag.name}
-                      color="primary"
-                      style={{ marginLeft: '3px' }}
-                    />
-                  ))}
-                <Typography variant="subtitle1">
-                  {!!movie.releaseDate &&
-                    moment(movie.releaseDate).format('MM/DD/YYYY')}
-                  <br />
-                  {!!movie.voteAverage && `Votes: ${movie.voteAverage}/10`}
-                  <br />
-                  {!!movie.runtime && getRuntime(movie.runtime)}
-                </Typography>
-                {!!movie.description && (
-                  <>
-                    <Typography variant="h6">Description:</Typography>
-                    <Typography variant="body2">{movie.description}</Typography>
-                  </>
-                )}
-                {!!movie.posterPath && (
-                  <img
-                    src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
-                    alt={`${movie.title} movie poster`}
-                  />
-                )}
-                <br />
-                {user.username === CommonStore.username && (
-                  <IconButton edge="end" onClick={removeMovie(movie.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                )}
+              <Paper
+                key={movie.id}
+                style={{
+                  marginBottom: '15px',
+                  paddingLeft: '.75rem',
+                  paddingRight: '.75rem'
+                }}
+              >
+                <Grid container spacing={3} alignItems="center">
+                  <Grid item xs={12} sm={2}>
+                    {!!movie.posterPath && (
+                      <img
+                        src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
+                        style={{
+                          maxHeight: '100%',
+                          maxWidth: '100%'
+                        }}
+                        alt={`${movie.title} movie poster`}
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={12} sm={10} container direction="column">
+                    <Grid item container justify="space-between">
+                      <Grid item>
+                        <Typography variant="h3" gutterBottom>
+                          {movie.title}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        {user.username === CommonStore.username && (
+                          <IconButton
+                            edge="end"
+                            onClick={removeMovie(movie.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
+                      </Grid>
+                    </Grid>
+                    <Grid item>
+                      {!!movie.tags &&
+                        movie.tags.map(tag => (
+                          <Chip
+                            key={tag.id}
+                            label={tag.name}
+                            color="primary"
+                            style={{ marginLeft: '3px' }}
+                          />
+                        ))}
+                    </Grid>
+                    <Grid item>
+                      <Typography variant="subtitle1">
+                        {!!movie.releaseDate &&
+                          moment(movie.releaseDate).format('MM/DD/YYYY')}
+                        <br />
+                        {!!movie.voteAverage &&
+                          `Votes: ${movie.voteAverage}/10`}
+                        <br />
+                        {!!movie.runtime && getRuntime(movie.runtime)}
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      {!!movie.description && (
+                        <>
+                          <Typography variant="h6">Description:</Typography>
+                          <Typography variant="body2">
+                            {movie.description}
+                          </Typography>
+                        </>
+                      )}
+                    </Grid>
+                  </Grid>
+                </Grid>
               </Paper>
             ))}
           </Fragment>
