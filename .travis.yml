@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "stable"
+install:
+  # - npm test TODO:
+  - npm run build:prod
+deploy:
+  provider: surge
+  skip_cleanup: true
+  domain: movie-chooser.surge.sh
+  project: ./build/
+on:
+  branch: master
