@@ -128,6 +128,12 @@ const Home: React.FC = observer(() => {
     }
   };
 
+  const maxMovieLength: number = data.movies.reduce(
+    (max, movie) =>
+      !!movie.runtime && movie.runtime > max ? movie.runtime : max,
+    0
+  );
+
   return (
     <>
       <Paper>
@@ -138,7 +144,7 @@ const Home: React.FC = observer(() => {
           onChange={filterTime}
           valueLabelDisplay="auto"
           min={0}
-          max={300} // TODO: max movie in list
+          max={maxMovieLength}
         />
         {data.tags.map(tag => (
           <Chip
