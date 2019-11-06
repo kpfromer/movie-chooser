@@ -61,6 +61,7 @@ export const GET_USER_AND_MOVIES_AND_TAGS = gql`
       id
       firstName
       lastName
+      username
       movies {
         id
         title
