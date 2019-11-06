@@ -7,16 +7,19 @@ import {
   Button,
   Slider,
   Chip,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { client } from '../..';
 import DeleteIcon from '@material-ui/icons/Delete';
+import MinusCircle from '@material-ui/icons/RemoveCircle';
 import { useQuery } from '@apollo/react-hooks';
 import {
   ADD_MOVIE,
   DELETE_MOVIE,
-  GET_USER_AND_MOVIES_AND_TAGS
+  GET_USER_AND_MOVIES_AND_TAGS,
+  WATCH_MOVIE
 } from '../../resolvers/movies';
 import { observer } from 'mobx-react-lite';
 import CommonStore from '../../store/CommonStore';
@@ -82,6 +85,23 @@ const Home: React.FC = observer(() => {
         if (res.data === false) {
           CommonStore.notify({
             message: 'Movie does not exist',
+            type: 'error'
+          });
+        }
+      });
+  };
+
+  const watchMovie = (id: string) => (): void => {
+    client
+      .mutate({
+        mutation: WATCH_MOVIE,
+        variables: { id },
+        refetchQueries: [{ query: GET_USER_AND_MOVIES_AND_TAGS }]
+      })
+      .then(res => {
+        if (res.data === false) {
+          CommonStore.notify({
+            message: 'Can not remove movie that does not exist!',
             type: 'error'
           });
         }
@@ -206,10 +226,22 @@ const Home: React.FC = observer(() => {
                       </Typography>
                     </Grid>
                     <Grid item>
+                      {CommonStore.role === 'ADMIN' && (
+                        <Tooltip title="Watched" aria-label="watched">
+                          <IconButton edge="end" onClick={watchMovie(movie.id)}>
+                            <MinusCircle />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {user.username === CommonStore.username && (
-                        <IconButton edge="end" onClick={removeMovie(movie.id)}>
-                          <DeleteIcon />
-                        </IconButton>
+                        <Tooltip title="Remove" aria-label="remove">
+                          <IconButton
+                            edge="end"
+                            onClick={removeMovie(movie.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
                     </Grid>
                   </Grid>

@@ -13,6 +13,8 @@ class CommonStore {
   @observable
   public username: string | null;
   @observable
+  public role: string | null;
+  @observable
   public snackbar: {
     message: string;
     type: 'success' | 'warning' | 'error' | 'info';
@@ -20,6 +22,7 @@ class CommonStore {
   constructor() {
     this.token = localStorage.getItem('token');
     this.username = localStorage.getItem('username');
+    this.role = localStorage.getItem('role');
   }
   @computed
   get loggedIn(): boolean {
@@ -44,9 +47,13 @@ class CommonStore {
     this.snackbar = null;
   }
   @action.bound
-  login(username: string, token: string): void {
+  login(username: string, token: string, role?: string): void {
     localStorage.setItem('token', token);
     localStorage.setItem('username', username);
+    if (role) {
+      localStorage.setItem('role', role);
+      this.role = role;
+    }
     this.username = username;
     this.token = token;
   }
@@ -54,8 +61,10 @@ class CommonStore {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('role');
     this.token = null;
     this.username = null;
+    this.role = null;
   }
 }
 

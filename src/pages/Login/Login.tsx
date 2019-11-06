@@ -27,7 +27,12 @@ const Login: React.FC = observer(() => {
     client
       .mutate({ mutation: SIGN_IN, variables: { login: username, password } })
       .then(res => {
-        CommonStore.login(username, res.data.signIn.token);
+        console.log(res.data.signIn);
+        CommonStore.login(
+          username,
+          res.data.signIn.token,
+          res.data.signIn.user.role
+        );
         CommonStore.notify({ message: 'Logged In.', type: 'success' });
         setDone(true);
       })

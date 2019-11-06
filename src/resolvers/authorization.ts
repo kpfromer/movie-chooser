@@ -4,6 +4,9 @@ export const SIGN_IN = gql`
   mutation SignIn($login: String!, $password: String!) {
     signIn(login: $login, password: $password) {
       token
+      user {
+        role
+      }
     }
   }
 `;

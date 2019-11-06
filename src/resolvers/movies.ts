@@ -15,6 +15,12 @@ export const DELETE_MOVIE = gql`
   }
 `;
 
+export const WATCH_MOVIE = gql`
+  mutation WatchMovie($id: ID!) {
+    watchMovie(id: $id)
+  }
+`;
+
 export const GET_MOVIES = gql`
   query GetMovies {
     movies {
