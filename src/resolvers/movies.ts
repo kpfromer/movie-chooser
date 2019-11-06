@@ -35,7 +35,7 @@ export const GET_MOVIES = gql`
   }
 `;
 
-export const GET_MOVIES_TAGS = gql`
+export const GET_USER_AND_MOVIES_AND_TAGS = gql`
   query GetMoviesTag {
     movies {
       id
@@ -55,6 +55,24 @@ export const GET_MOVIES_TAGS = gql`
     tags {
       id
       name
+    }
+
+    users {
+      id
+      firstName
+      lastName
+      movies {
+        id
+        title
+        description
+        voteAverage
+        runtime
+        posterPath
+        tags {
+          id
+          name
+        }
+      }
     }
   }
 `;

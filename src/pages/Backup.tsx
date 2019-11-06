@@ -1,14 +1,15 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { Movie, Tag } from '../type';
-import { GET_MOVIES_TAGS } from '../resolvers/movies';
+import { Movie, Tag, User } from '../type';
+import { GET_USER_AND_MOVIES_AND_TAGS } from '../resolvers/movies';
 import { CircularProgress } from '@material-ui/core';
 
 const Backup: React.FC = () => {
   const { data, loading } = useQuery<{
     movies: Movie[];
+    users: (User & { movies: Movie[] })[];
     tags: Tag[];
-  }>(GET_MOVIES_TAGS);
+  }>(GET_USER_AND_MOVIES_AND_TAGS);
 
   if (loading || !data) {
     return <CircularProgress variant="indeterminate" />;

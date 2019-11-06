@@ -14,12 +14,10 @@ import { client } from '../..';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useQuery } from '@apollo/react-hooks';
 import {
-  GET_MOVIES,
   ADD_MOVIE,
   DELETE_MOVIE,
-  GET_MOVIES_TAGS
+  GET_USER_AND_MOVIES_AND_TAGS
 } from '../../resolvers/movies';
-import { GET_USERS } from '../../resolvers/authorization';
 import { observer } from 'mobx-react-lite';
 import CommonStore from '../../store/CommonStore';
 import { Movie, Tag, User } from '../../type';
@@ -38,15 +36,19 @@ const Home: React.FC = observer(() => {
   const [time, setTime] = useState<number[]>([0, 300]);
   const [tagsToShow, setTagsToShow] = useState<string[]>([]);
   const [randomMovie, setRandomMovie] = useState('');
-  const { data: movieData, loading: loadingMovies } = useQuery<{
+  const { data, loading } = useQuery<{
     movies: Movie[];
     tags: Tag[];
-  }>(GET_MOVIES_TAGS);
-  const { data: userData, loading: loadingUser } = useQuery<{
     users: (User & { movies: Movie[] })[];
-  }>(GET_USERS);
+  }>(GET_USER_AND_MOVIES_AND_TAGS);
 
-  const loading = loadingMovies || loadingUser;
+  if (loading) {
+    return <CircularProgress variant="indeterminate" />;
+  }
+
+  if (!data) {
+    return <>Failed to load movie data!</>;
+  }
 
   const addMovie = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -56,11 +58,7 @@ const Home: React.FC = observer(() => {
         .mutate({
           mutation: ADD_MOVIE,
           variables: { title: movie },
-          refetchQueries: [
-            { query: GET_MOVIES },
-            { query: GET_MOVIES_TAGS },
-            { query: GET_USERS }
-          ]
+          refetchQueries: [{ query: GET_USER_AND_MOVIES_AND_TAGS }]
         })
         .then(res => {
           CommonStore.notify({
@@ -78,11 +76,7 @@ const Home: React.FC = observer(() => {
       .mutate({
         mutation: DELETE_MOVIE,
         variables: { id },
-        refetchQueries: [
-          { query: GET_MOVIES },
-          { query: GET_MOVIES_TAGS },
-          { query: GET_USERS }
-        ]
+        refetchQueries: [{ query: GET_USER_AND_MOVIES_AND_TAGS }]
       })
       .then(res => {
         if (res.data === false) {
@@ -118,8 +112,8 @@ const Home: React.FC = observer(() => {
       tagsToShow.length === 0); // if tags include it (tags not empty)
 
   const getRandom = (): void => {
-    if (!!userData && userData.users.length > 0) {
-      const validUsers = userData.users.filter(user => user.movies.length > 0);
+    if (data.users.length > 0) {
+      const validUsers = data.users.filter(user => user.movies.length > 0);
       if (validUsers.length > 0) {
         const randomUser =
           validUsers[Math.floor(Math.random() * validUsers.length)];
@@ -146,17 +140,15 @@ const Home: React.FC = observer(() => {
           min={0}
           max={300} // TODO: max movie in list
         />
-        {!loading &&
-          !!movieData &&
-          movieData.tags.map(tag => (
-            <Chip
-              key={tag.id}
-              label={tag.name}
-              color={tagsToShow.includes(tag.id) ? 'primary' : 'secondary'}
-              style={{ marginLeft: '3px' }}
-              onClick={filterTag(tag.id)}
-            />
-          ))}
+        {data.tags.map(tag => (
+          <Chip
+            key={tag.id}
+            label={tag.name}
+            color={tagsToShow.includes(tag.id) ? 'primary' : 'secondary'}
+            style={{ marginLeft: '3px' }}
+            onClick={filterTag(tag.id)}
+          />
+        ))}
       </Paper>
       <h1>Movie List:</h1>
       {CommonStore.loggedIn && (
@@ -171,103 +163,92 @@ const Home: React.FC = observer(() => {
         </form>
       )}
       <hr />
-      {!loading && (
-        <>
-          <Button onClick={getRandom}>Get Random Movie</Button>
-          <h1>{randomMovie}</h1>
-        </>
-      )}
-      {loading || !userData ? (
-        <CircularProgress variant="indeterminate" />
-      ) : (
-        userData.users.map(user => (
-          <Fragment key={user.id}>
-            <h1>
-              {user.firstName} {user.lastName}
-            </h1>
-            {user.movies.filter(filterMovie).map(movie => (
-              <Paper
-                key={movie.id}
-                style={{
-                  marginBottom: '15px',
-                  paddingLeft: '.75rem',
-                  paddingRight: '.75rem'
-                }}
-              >
-                <Grid container spacing={3} alignItems="center">
-                  <Grid item xs={12} sm={2}>
-                    {!!movie.posterPath && (
-                      <img
-                        src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
-                        style={{
-                          maxHeight: '100%',
-                          maxWidth: '100%'
-                        }}
-                        alt={`${movie.title} movie poster`}
-                      />
-                    )}
-                  </Grid>
-                  <Grid item xs={12} sm={10} container direction="column">
-                    <Grid item container justify="space-between">
-                      <Grid item>
-                        <Typography variant="h3" gutterBottom>
-                          {movie.title}
-                        </Typography>
-                      </Grid>
-                      <Grid item>
-                        {user.username === CommonStore.username && (
-                          <IconButton
-                            edge="end"
-                            onClick={removeMovie(movie.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                      </Grid>
-                    </Grid>
+      <Button onClick={getRandom}>Get Random Movie</Button>
+      <h1>{randomMovie}</h1>
+      {data.users.map(user => (
+        <Fragment key={user.id}>
+          <h1>
+            {user.firstName} {user.lastName}
+          </h1>
+          {user.movies.filter(filterMovie).map(movie => (
+            <Paper
+              key={movie.id}
+              style={{
+                marginBottom: '15px',
+                paddingLeft: '.75rem',
+                paddingRight: '.75rem'
+              }}
+            >
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm={2}>
+                  {!!movie.posterPath && (
+                    <img
+                      src={`http://image.tmdb.org/t/p/w185${movie.posterPath}`}
+                      style={{
+                        maxHeight: '100%',
+                        maxWidth: '100%'
+                      }}
+                      alt={`${movie.title} movie poster`}
+                    />
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={10} container direction="column">
+                  <Grid item container justify="space-between">
                     <Grid item>
-                      {!!movie.tags &&
-                        movie.tags.map(tag => (
-                          <Chip
-                            key={tag.id}
-                            label={tag.name}
-                            color="primary"
-                            style={{ marginLeft: '3px' }}
-                          />
-                        ))}
-                    </Grid>
-                    <Grid item>
-                      <Typography variant="subtitle1">
-                        {!!movie.releaseDate && (
-                          <>
-                            {moment(movie.releaseDate).format('MM/DD/YYYY')}
-                            <br />
-                          </>
-                        )}
-
-                        {!!movie.voteAverage && (
-                          <>
-                            {`Votes: ${movie.voteAverage}/10`}
-                            <br />
-                          </>
-                        )}
-                        {!!movie.runtime && getRuntime(movie.runtime)}
+                      <Typography variant="h3" gutterBottom>
+                        {movie.title}
                       </Typography>
                     </Grid>
                     <Grid item>
-                      {!!movie.description && (
-                        <Typography variant="body2">
-                          {movie.description}
-                        </Typography>
+                      {user.username === CommonStore.username && (
+                        <IconButton edge="end" onClick={removeMovie(movie.id)}>
+                          <DeleteIcon />
+                        </IconButton>
                       )}
                     </Grid>
                   </Grid>
+                  <Grid item>
+                    {!!movie.tags &&
+                      movie.tags.map(tag => (
+                        <Chip
+                          key={tag.id}
+                          label={tag.name}
+                          color="primary"
+                          style={{ marginLeft: '3px' }}
+                        />
+                      ))}
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="subtitle1">
+                      {!!movie.releaseDate && (
+                        <>
+                          {moment(movie.releaseDate).format('MM/DD/YYYY')}
+                          <br />
+                        </>
+                      )}
+
+                      {!!movie.voteAverage && (
+                        <>
+                          {`Votes: ${movie.voteAverage}/10`}
+                          <br />
+                        </>
+                      )}
+                      {!!movie.runtime && getRuntime(movie.runtime)}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    {!!movie.description && (
+                      <Typography variant="body2">
+                        {movie.description}
+                      </Typography>
+                    )}
+                  </Grid>
                 </Grid>
-              </Paper>
-            ))}
-          </Fragment>
-        ))
-      )}
+              </Grid>
+            </Paper>
+          ))}
+        </Fragment>
+      ))}
     </>
   );
 });
