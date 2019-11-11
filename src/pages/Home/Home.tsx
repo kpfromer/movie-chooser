@@ -133,7 +133,8 @@ const Home: React.FC = observer(() => {
   const getRandom = (): void => {
     const validUsers = data.users.filter(
       user =>
-        user.movies.map(movie => movie.weight).reduce((sum, i) => sum + i) > 0
+        user.movies.map(movie => movie.weight).reduce((sum, i) => sum + i, 0) >
+        0
     );
     if (validUsers.length <= 0) {
       return;
