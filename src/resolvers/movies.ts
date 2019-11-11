@@ -30,6 +30,7 @@ export const GET_MOVIES = gql`
       voteAverage
       runtime
       posterPath
+      weight
       tags {
         id
         name
@@ -50,6 +51,7 @@ export const GET_USER_AND_MOVIES_AND_TAGS = gql`
       voteAverage
       runtime
       posterPath
+      weight
       tags {
         id
         name
@@ -75,6 +77,7 @@ export const GET_USER_AND_MOVIES_AND_TAGS = gql`
         voteAverage
         runtime
         posterPath
+        weight
         tags {
           id
           name
@@ -93,6 +96,7 @@ export const GET_MOVIE = gql`
       voteAverage
       runtime
       posterPath
+      weight
       tags {
         id
         name
