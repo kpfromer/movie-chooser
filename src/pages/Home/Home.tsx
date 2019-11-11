@@ -131,7 +131,10 @@ const Home: React.FC = observer(() => {
       tagsToShow.length === 0); // if tags include it (tags not empty)
 
   const getRandom = (): void => {
-    const validUsers = data.users.filter(user => user.movies.length > 0);
+    const validUsers = data.users.filter(
+      user =>
+        user.movies.map(movie => movie.weight).reduce((sum, i) => sum + i) > 0
+    );
     if (validUsers.length <= 0) {
       return;
     }
