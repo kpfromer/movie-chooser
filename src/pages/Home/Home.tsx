@@ -131,19 +131,17 @@ const Home: React.FC = observer(() => {
       tagsToShow.length === 0); // if tags include it (tags not empty)
 
   const getRandom = (): void => {
+    const getMoviesWeights = (movies: Movie[]): number[] =>
+      movies.map(movie => (movie.weight ? movie.weight : 3));
     const validUsers = data.users.filter(
-      user =>
-        user.movies.map(movie => movie.weight).reduce((sum, i) => sum + i, 0) >
-        0
+      user => getMoviesWeights(user.movies).reduce((sum, i) => sum + i, 0) > 0
     );
     if (validUsers.length <= 0) {
       return;
     }
     const randomUser =
       validUsers[Math.floor(Math.random() * validUsers.length)];
-    const cumulativeMovieWeightSums = randomUser.movies.map(
-      movie => movie.weight
-    );
+    const cumulativeMovieWeightSums = getMoviesWeights(randomUser.movies);
     for (let i = 1; i < cumulativeMovieWeightSums.length; i++) {
       cumulativeMovieWeightSums[i] += cumulativeMovieWeightSums[i - 1];
     }
