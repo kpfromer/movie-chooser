@@ -6,6 +6,7 @@ export interface Movie {
   voteAverage?: number;
   releaseDate?: Date;
   runtime?: number;
+  weight: number;
   tags: Tag[];
   user: User;
 }

@@ -51,6 +51,7 @@ export const GET_USERS = gql`
         voteAverage
         runtime
         posterPath
+        weight
         tags {
           id
           name

@@ -125,27 +125,39 @@ const Home: React.FC = observer(() => {
   const [start, end] = time;
   const filterMovie = (movie: Movie): boolean =>
     (movie.runtime === undefined ||
-      (movie.runtime !== undefined &&
-        (start <= movie.runtime && movie.runtime <= end))) && // time
+      (start <= movie.runtime && movie.runtime <= end)) && // time
     ((tagsToShow.length > 0 &&
       movie.tags.some(tag => tagsToShow.includes(tag.id))) ||
       tagsToShow.length === 0); // if tags include it (tags not empty)
 
   const getRandom = (): void => {
-    if (data.users.length > 0) {
-      const validUsers = data.users.filter(user => user.movies.length > 0);
-      if (validUsers.length > 0) {
-        const randomUser =
-          validUsers[Math.floor(Math.random() * validUsers.length)];
-        const movie =
-          randomUser.movies[
-            Math.floor(Math.random() * randomUser.movies.length)
-          ].title;
-        setRandomMovie(
-          `${randomUser.firstName} ${randomUser.lastName}'s movie: "${movie}"`
-        );
-      }
+    const getMoviesWeights = (movies: Movie[]): number[] =>
+      movies.map(movie => (movie.weight ? movie.weight : 3));
+    const validUsers = data.users.filter(
+      user => getMoviesWeights(user.movies).reduce((sum, i) => sum + i, 0) > 0
+    );
+    if (validUsers.length <= 0) {
+      return;
     }
+    const randomUser =
+      validUsers[Math.floor(Math.random() * validUsers.length)];
+    const cumulativeMovieWeightSums = getMoviesWeights(randomUser.movies);
+    for (let i = 1; i < cumulativeMovieWeightSums.length; i++) {
+      cumulativeMovieWeightSums[i] += cumulativeMovieWeightSums[i - 1];
+    }
+    const chosenWeightValue = Math.floor(
+      Math.random() *
+        cumulativeMovieWeightSums[cumulativeMovieWeightSums.length - 1]
+    );
+    const movie =
+      randomUser.movies[
+        cumulativeMovieWeightSums.findIndex(
+          weight => weight - chosenWeightValue > 0
+        )
+      ];
+    setRandomMovie(
+      `${randomUser.firstName} ${randomUser.lastName}'s movie: "${movie.title}"`
+    );
   };
 
   const maxMovieLength: number = data.movies.reduce(
