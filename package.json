@@ -12,7 +12,7 @@
     "apollo-server-express": "^2.9.5",
     "bounty": "^1.2.1",
     "clsx": "^1.0.4",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "jwt-decode": "^2.2.0",
     "mobx": "^5.14.2",
     "mobx-react-lite": "^1.5.0",
